@@ -1,0 +1,12 @@
+{
+  "key.accurate_block_placement.toggle": "Toggle Accurate Placement",
+  "accurate_block_placement.setting.enabled": "Accurate placement",
+  "accurate_block_placement.setting.allowed_on_servers": "Accurate placement on servers",
+  "accurate_block_placement.setting.buckets": "Accurate placement: buckets",
+  "accurate_block_placement.setting.armor_stands": "Accurate placement: armor stands",
+  "accurate_block_placement.setting.item_frames": "Accurate placement: item frames",
+  "accurate_block_placement.setting.spawn_eggs": "Accurate placement: spawn eggs",
+  "accurate_block_placement.setting.tools": "Accurate placement: tools (axes, hoes, shovels)",
+  "accurate_block_placement.toggle.on": "Accurate placement enabled",
+  "accurate_block_placement.toggle.off": "Accurate placement disabled"
+}

@@ -1,0 +1,60 @@
+id = "accurate_block_placement"
+name = "Accurate Block Placement"
+version = "1.0.0"
+description = "Holding use places on every new block the crosshair lands on, at once, no matter how fast you sweep. A Horizon port of AccurateBlockPlacement Reborn."
+authors = []
+api = "0.2"
+side = "client"
+capabilities = ["registries"]
+
+[native]
+game = "26.3"
+horizon = "f00125f61f794aaa3d4e950d301f353b35b6ee3d"
+mixins = "e59da9094f0c2fdda6c627fe9eff22dec6a906f0"
+
+# The game-side state and logic, injected into the game's `crate::game`.
+[[native.module]]
+id = "native"
+file = "crates/horizon-client/src/game.rs"
+name = "abp_native"
+source = "src/native.rs"
+
+# Each rendered frame while use is held: a fresh block under the crosshair
+# joins the queue a tick places from. Sampling per frame, not per tick, is
+# what keeps a fast sweep from skipping blocks.
+[[native.mixin]]
+id = "frame"
+target = "horizon_client::game::native_hooks::render_frame_pre::Game::native_render_frame_pre"
+kind = "HEAD"
+helper = "src/mixins/frame.rs"
+bindings = [{ name = "game", ty = "&mut Game<'_>", value = "&mut *self" }]
+
+# Before the tick's input runs: the oldest queued fresh target becomes the
+# tick's held use (via `forced_hit`), and a target this hold already placed
+# keeps the four-tick repeat closed.
+[[native.mixin]]
+id = "tick"
+target = "horizon_client::game::native_hooks::client_tick_pre::Game::native_client_tick_pre"
+kind = "HEAD"
+helper = "src/mixins/tick.rs"
+bindings = [{ name = "game", ty = "&mut Game<'_>", value = "&mut *self" }]
+
+# The hit the tick aimed its use at is a one-tick loan.
+[[native.mixin]]
+id = "tick_post"
+target = "horizon_client::game::native_hooks::client_tick_post::Game::native_client_tick_post"
+kind = "HEAD"
+helper = "src/mixins/tick_post.rs"
+bindings = [{ name = "game", ty = "&mut Game<'_>", value = "&mut *self" }]
+
+# The rebindable toggle key (unbound by default, as upstream).
+[[native.mixin]]
+id = "key"
+target = "horizon_client::game::native_hooks::input_key::Game::native_input_key"
+kind = "HEAD"
+helper = "src/mixins/key.rs"
+bindings = [
+  { name = "game", ty = "&mut Game<'_>", value = "&mut *self" },
+  { name = "key", ty = "&str", value = "key" },
+  { name = "action", ty = "mod_api::KeyAction", value = "action" },
+]
