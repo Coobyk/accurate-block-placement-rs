@@ -25,8 +25,6 @@ use std::collections::{HashSet, VecDeque};
 const ID: &str = "accurate_block_placement";
 /// The registered toggle key's name (`key.accurate_block_placement.toggle`).
 const TOGGLE_KEY: &str = "toggle";
-/// `KeyRegistration`'s default for an unbound mapping (vanilla's name for one).
-const UNBOUND: &str = "key.keyboard.unknown";
 /// Queued targets one hold may keep. A target past the cap is not lost: it is
 /// simply not marked seen, so it still opens the gate when hovered again.
 const QUEUE_CAP: usize = 16;
@@ -180,13 +178,15 @@ fn player_block(game: &Game<'_>) -> Option<[i32; 3]> {
 fn toggle_key(game: &Game<'_>) -> String {
     game.mod_key(ID, TOGGLE_KEY)
         .map(|(key, _)| key)
-        .unwrap_or_else(|| UNBOUND.to_owned())
+        .unwrap_or_else(|| ::accurate_block_placement::UNBOUND.to_owned())
 }
 
 /// Once a frame (the mixin on `Game::native_render_frame_pre`). While use is
 /// held, a fresh block under the crosshair joins the placement queue; the
 /// rising edge instead marks the block the press itself is already on, so the
-/// ordinary click it makes counts as that target's placement.
+/// ordinary click it makes counts as that target's placement. Queueing does
+/// not check `entity_targeted`: `abp_tick` early-outs on an entity aim
+/// without popping, so queued hits simply wait for the aim to move on.
 pub(in crate::game) fn abp_frame(game: &mut Game<'_>) {
     let cfg = config(game);
     state(|s| {
@@ -278,8 +278,8 @@ pub(in crate::game) fn abp_post(game: &mut Game<'_>) {
 
 /// The registered toggle key (the mixin on `Game::native_input_key`): it flips
 /// the persisted `enabled` setting the page shows, with a line in chat.
-pub(in crate::game) fn abp_key(game: &mut Game<'_>, key: &str, pressed: bool) {
-    if !pressed || game.screen != Screen::Playing || key != toggle_key(game) {
+pub(in crate::game) fn abp_key(game: &mut Game<'_>, key: &str) {
+    if game.screen != Screen::Playing || key != toggle_key(game) {
         return;
     }
     let on = !flag(game, "enabled", true);

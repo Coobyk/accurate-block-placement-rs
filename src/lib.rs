@@ -11,16 +11,19 @@
 
 use mod_api::{Hooks, KeyRegistration, Registrar, RegistrationContext, SettingSpec};
 
+/// `KeyRegistration`'s default for an unbound mapping (vanilla's name for
+/// one); the game side reads the same value from `crate::game::abp_native`.
+pub const UNBOUND: &str = "key.keyboard.unknown";
+
 #[derive(Default)]
 struct Mod;
 
 #[mod_api::horizon_mod]
 impl Hooks for Mod {
     fn register(&self, r: &mut dyn Registrar, _: &RegistrationContext) {
-        // Upstream leaves the toggle unbound; `key.keyboard.unknown` is
-        // vanilla's name for an unbound mapping.
+        // Upstream leaves the toggle unbound.
         r.register_key_mapping(
-            KeyRegistration::new("toggle", "key.keyboard.unknown")
+            KeyRegistration::new("toggle", UNBOUND)
                 .label("key.accurate_block_placement.toggle"),
         );
 
